@@ -11,7 +11,7 @@ block::block(int x, int y) {
 
 // 决定这个格子的数字
 void block::scan(const std::vector<block>& all_blocks, int grid_width, int grid_height) {
-  if (this->is_mines()) {
+  if (this->mine) {
     this->neighbor_mines = -1;
     return;
   }
@@ -27,7 +27,7 @@ void block::scan(const std::vector<block>& all_blocks, int grid_width, int grid_
       if (neighbor_x >= 0 && neighbor_y >= 0 && neighbor_x < grid_width && neighbor_y < grid_height) {
         int neighbor_index = neighbor_y * grid_width + neighbor_x;
 
-        if (all_blocks[neighbor_index].is_mines() == 1) {
+        if (all_blocks[neighbor_index].mine == 1) {
           mines_count++;
         }
       }

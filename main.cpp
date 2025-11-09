@@ -8,12 +8,13 @@
     #include <windows.h>
 #endif
 
+// 用来揭开格子的递归函数
 void open_blank_cells(std::vector<block>& all_blocks, const int x, const int y, const int grid_width, const int grid_height) {
   // 设置返回逻辑
   if (x < 0 || x >= grid_width || y < 0 || y >= grid_height) {
     return; // 超出边界则返回
   }
-  if (all_blocks[y * grid_width + x].is_look() == 1) {
+  if (all_blocks[y * grid_width + x].look == 1) {
     return; // 曾经被揭开则返回
   }
 
@@ -40,8 +41,9 @@ int main() {
   #endif
 
   // 初始化棋盘大小和雷数
-  int mines = 9;
+  int mines = 3;
   int grid_width = 9, grid_height = 9;
+  int flags = 0; // 用来判断胜利
 
   // 初始化内存
   std::vector<block> blocks;
@@ -59,7 +61,7 @@ int main() {
   int mine_counter = 0;
   while (mine_counter < mines) {
     int random_index = rand() % (grid_width * grid_height);
-    if (blocks[random_index].is_mines() == 0) {
+    if (blocks[random_index].mine == 0) {
       blocks[random_index].mine = 1;
       mine_counter++;
     }
@@ -88,7 +90,7 @@ int main() {
 
   for (int j = 0; j < grid_width; j++) {
     for (int i = 0; i < grid_width; i++) {
-      if (blocks[j * grid_width + i].is_look() == 0) {
+      if (blocks[j * grid_width + i].look == 0) {
         std::cout << "■ ";
       }
     }
@@ -105,10 +107,10 @@ int main() {
     std::cin >> temp_x >> temp_y >> cmd;
 
     if (cmd == "c") {
-      if (blocks[temp_y * grid_width + temp_x].is_mines() == 1) {
+      if (blocks[temp_y * grid_width + temp_x].mine == 1) {
         break;
       }
-      if (blocks[temp_y * grid_width + temp_x].is_look() == 1) {
+      if (blocks[temp_y * grid_width + temp_x].look == 1) {
         std::cout << "已经点击过该格子" ;
         continue;
       }
@@ -120,17 +122,54 @@ int main() {
       open_blank_cells(blocks, temp_x, temp_y, grid_width, grid_height);
     }
 
+    if (cmd == "f") {
+      if (blocks[temp_y * grid_width + temp_x].flag == 1) {
+        std::cout << "已经点击过该格子" ;
+        continue;
+      }
+      if (blocks[temp_y * grid_width + temp_x].look == 1) {
+        std::cout << "无法点击此格子，请重新选择" ;
+        continue;
+      }
+      if (temp_x < 0 || temp_x >= grid_width || temp_y < 0 || temp_y >= grid_height) {
+        std::cout << "所选格子不合法，请重新选择" ;
+        continue;
+      }
+
+      blocks[temp_y * grid_width + temp_x].flag = 1;
+
+      if (blocks[temp_y * grid_width + temp_x].mine == 1) {
+        flags++;
+      }
+    }
+
+    // 打印棋盘
     for (int j = 0; j < grid_height; j++) {
       for (int i = 0; i < grid_width; i++) {
-        if (blocks[j * grid_width + i].is_look() == 1) {
-          std::cout << blocks[j * grid_width + i].neighbor_mines << " ";
+        if (blocks[j * grid_width + i].look == 1) {
+          if (blocks[j * grid_width + i].neighbor_mines == 0) {
+            std::cout << "  ";
+          }
+          else {
+            std::cout << blocks[j * grid_width + i].neighbor_mines << " ";
+          }
+          continue;
         }
-        else {
-          std::cout << "■ ";
+        if (blocks[j * grid_width + i].flag == 1) {
+          std::cout << "F ";
+          continue;
         }
+
+        std::cout << "■ ";
+
       }
 
       std::cout << "\n";
+    }
+
+    if (flags == mines) {
+      std::cout << "游戏胜利" << std::endl;
+      return 0;
     }
   }
 
