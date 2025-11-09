@@ -8,6 +8,31 @@
     #include <windows.h>
 #endif
 
+void open_blank_cells(std::vector<block>& all_blocks, const int x, const int y, const int grid_width, const int grid_height) {
+  // 设置返回逻辑
+  if (x < 0 || x >= grid_width || y < 0 || y >= grid_height) {
+    return; // 超出边界则返回
+  }
+  if (all_blocks[y * grid_width + x].is_look() == 1) {
+    return; // 曾经被揭开则返回
+  }
+
+  all_blocks[y * grid_width + x].look = 1;   // 揭开操作
+
+  // 不递归
+  if (all_blocks[y * grid_width + x].neighbor_mines > 0) {
+    return;
+  }
+  // 递归
+  if (all_blocks[y * grid_width + x].neighbor_mines == 0) {
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+        open_blank_cells(all_blocks, x + i, y + j, grid_width, grid_height);
+      }
+    }
+  }
+}
+
 
 int main() {
   #ifdef _WIN32
@@ -40,12 +65,18 @@ int main() {
     }
   }
 
+  // 初始化所有格子的数字
+  for (int j = 0; j < grid_height; j++) {
+    for (int i = 0; i < grid_width; i++) {
+      blocks[j * grid_width + i].scan(blocks, grid_width, grid_height);
+    }
+  }
 
   // 打印初始雷区
   std::cout << "打印初始雷区" << std::endl;
   for (int j = 0; j < grid_height; j++) {
     for (int i = 0; i < grid_width; i++) {
-      std::cout << blocks[j * grid_height + i].mine << " ";
+      std::cout << blocks[j * grid_width + i].mine << " ";
     }
     std::cout << std::endl;
   }
@@ -55,13 +86,10 @@ int main() {
   std::cout << "请输入坐标后再输入命令来表示‘看’ 或 ‘插旗’" << std::endl;
   std::cout << "如 “5 8 c”\n   “8 4 f”" << std::endl;
 
-  for (int j = 0; j < grid_height; j++) {
+  for (int j = 0; j < grid_width; j++) {
     for (int i = 0; i < grid_width; i++) {
-      if (blocks[j * grid_height + i].is_look() == 0) {
+      if (blocks[j * grid_width + i].is_look() == 0) {
         std::cout << "■ ";
-      }
-      else {
-        std::cout << blocks[j * grid_height + i].neighbor_mines << " ";
       }
     }
     std::cout << std::endl;
@@ -71,32 +99,38 @@ int main() {
   while (1) {
     std::cout << "请输入您的选择：" << std::endl;
 
+    // 初始化输入
     int temp_x, temp_y;
     std::string cmd;
     std::cin >> temp_x >> temp_y >> cmd;
-    std::cout << temp_x << std::endl;
-    std::cout << temp_y << std::endl;
-    std::cout << cmd << std::endl;
+
+    if (cmd == "c") {
+      if (blocks[temp_y * grid_width + temp_x].is_mines() == 1) {
+        break;
+      }
+      if (blocks[temp_y * grid_width + temp_x].is_look() == 1) {
+        std::cout << "已经点击过该格子" ;
+        continue;
+      }
+      if (temp_x < 0 || temp_x >= grid_width || temp_y < 0 || temp_y >= grid_height) {
+        std::cout << "所选格子不合法，请重新选择" ;
+        continue;
+      }
+
+      open_blank_cells(blocks, temp_x, temp_y, grid_width, grid_height);
+    }
 
     for (int j = 0; j < grid_height; j++) {
       for (int i = 0; i < grid_width; i++) {
-        if (blocks[j * grid_height + i].is_look() == 0) {
-          if (i == temp_x && j == temp_y) {
-            std::cout << blocks[j * grid_height + i].neighbor_mines << " ";
-          }
-          else {
-            std::cout << "■ ";
-          }
+        if (blocks[j * grid_width + i].is_look() == 1) {
+          std::cout << blocks[j * grid_width + i].neighbor_mines << " ";
         }
         else {
-          std::cout << blocks[j * grid_height + i].neighbor_mines << " ";
+          std::cout << "■ ";
         }
       }
-      std::cout << std::endl;
-    }
 
-    if (blocks[temp_y * grid_height + temp_x].is_mines() == 1) {
-      break;
+      std::cout << "\n";
     }
   }
 
