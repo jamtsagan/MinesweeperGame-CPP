@@ -1,39 +1,40 @@
-#ifndef MINESWEEPERGAME_CPP_GAME_H
-#define MINESWEEPERGAME_CPP_GAME_H
+#ifndef GAME_H
+#define GAME_H
 
-#include <vector>
-#include "block.h"
-
-struct TileInfo {
-  int look; // 0 for hidden, 1 for revealed
-  int mine; // 0 for not mine, 1 for mine
-  int neighbor_mines;
-};
+# include <vector>
+# include "block.h"
 
 class Game {
-public:
-  // 构造函数：当一局新游戏开始时调用
-  Game(int width, int height, int mines);
+  public:
+    Game(int width, int height, int num_mines);
 
-  // 揭开一个格子，这是 Flutter UI 将会调用的主要功能
-  void revealTile(int x, int y);
+    // 揭开一个格子
+    void reveal_cells(int x, int y);
 
-  // 获取当前整个棋盘的状态，以便 UI 可以绘制它
-  std::vector<TileInfo> getBoardState() const;
+    // 插旗
+    void flag_cells(int x, int y);
 
-  // 检查游戏是否结束
-  bool isGameOver() const;
+    // 获取所有格子的状态
+    const std::vector<block>& get_blocks() const;
 
-private:
-  // 我们的递归函数，现在是类的私有成员，外部无法直接访问
-  void openBlankCells(int x, int y);
+    // 检查游戏是否胜利
+    bool is_game_win() const;
 
-  // 游戏的状态都作为类的私有成员变量
-  int grid_width;
-  int grid_height;
-  int mine_count;
-  bool game_over;
-  std::vector<block> blocks;
-};
+    // 检查游戏受否因为踩雷结束
+    bool is_game_over() const;
 
-#endif //MINESWEEPERGAME_CPP_GAME_H
+  private:
+
+    // 递归揭开空格子
+    void open_blank_cells(int x, int y);
+
+    int grid_width, grid_height;
+    int mines;
+    int flags;
+    bool game_over_flags;
+
+    std::vector<block> blocks;
+
+}
+
+#endif
