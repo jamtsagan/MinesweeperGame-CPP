@@ -14,5 +14,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # add_executable(可执行文件名 源文件1 源文件2 源文件3 ...)
 # 它告诉 CMake，你要创建一个名为 "MinesweeperGame" 的可执行文件
 # 这个文件是由 main.cpp, block.cpp, 和 block.h 共同构成的。
-add_executable(MinesweeperGame-CPP main.cpp block.cpp block.h
-        Game.cpp)
+add_library(MinesweeperCore SHARED
+        block.cpp
+        block.h
+        Game.cpp
+        Game.h
+        game_api.cpp
+        game_api.h
+        dll_export.h
+)
+
+target_compile_definitions(MinesweeperCore PRIVATE MINESWEEPERCORE_EXPORTS)
+
+add_executable(TestRunner
+        test_main.cpp
+)
+
+target_link_libraries(TestRunner PRIVATE MinesweeperCore)

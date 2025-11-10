@@ -18,10 +18,10 @@ class Game {
     const std::vector<block>& get_blocks() const;
 
     // 检查游戏是否胜利
-    bool is_game_win() const;
+    bool is_game_win();
 
     // 检查游戏受否因为踩雷结束
-    bool is_game_over() const;
+    bool is_game_over();
 
   private:
 
@@ -35,6 +35,6 @@ class Game {
 
     std::vector<block> blocks;
 
-}
+};
 
 #endif
