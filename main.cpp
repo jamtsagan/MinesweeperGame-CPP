@@ -106,16 +106,26 @@ int main() {
     std::string cmd;
     std::cin >> temp_x >> temp_y >> cmd;
 
+    // 防呆设置
+    if (temp_x < 0 || temp_x >= grid_width || temp_y < 0 || temp_y >= grid_height) {
+      std::cout << "所选格子不合法，请重新选择" ;
+      continue;
+    }
+    if (cmd == "q") {
+      std::cout << "已退出游戏" << std::endl;
+      return 0;
+    }
+    if (cmd != "q" && cmd != "c" && cmd != "f") {
+      std::cout << "非法符号，请重新输入" << std::endl;
+      continue;
+    }
+
     if (cmd == "c") {
       if (blocks[temp_y * grid_width + temp_x].mine == 1) {
         break;
       }
       if (blocks[temp_y * grid_width + temp_x].look == 1) {
         std::cout << "已经点击过该格子" ;
-        continue;
-      }
-      if (temp_x < 0 || temp_x >= grid_width || temp_y < 0 || temp_y >= grid_height) {
-        std::cout << "所选格子不合法，请重新选择" ;
         continue;
       }
 
@@ -129,10 +139,6 @@ int main() {
       }
       if (blocks[temp_y * grid_width + temp_x].look == 1) {
         std::cout << "无法点击此格子，请重新选择" ;
-        continue;
-      }
-      if (temp_x < 0 || temp_x >= grid_width || temp_y < 0 || temp_y >= grid_height) {
-        std::cout << "所选格子不合法，请重新选择" ;
         continue;
       }
 
