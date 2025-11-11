@@ -30,14 +30,32 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  ffi: ^2.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+ffigen:
+  name: MinesweeperApi # 生成的 Dart 类的名字
+  description: Bindings for the MinesweeperCore C++ library.
+  output: 'lib/minesweeper_api.dart' # 生成的 Dart 文件路径
+  headers:
+    entry-points:
+      - 'src/ffi/game_api.h' # 告诉 ffigen 去读哪个头文件
+  # 告诉 ffigen 我们要导出的 C 函数（使用正则表达式）
+  functions:
+    include:
+      - '.*'
+
+  llvm-path:
+    - 'C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/Llvm/x64'
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  ffigen: ^8.0.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

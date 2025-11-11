@@ -6,6 +6,7 @@ block::block(int x, int y) {
   this->y_coord = y;
   this->mine = 0;
   this->look = 0;
+  this->flag = 0;
   this->neighbor_mines = 0;
 }
 
