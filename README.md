@@ -3,7 +3,6 @@
 这是一个经典的扫雷游戏，但它的背后有一个特别的故事：它的核心逻辑由高性能的 C++ 编写，而它的现代化用户界面则由 Flutter 构建。这个项目是我从底层系统编程到现代化 App 开发的一次完整的学习探索。
 
 ![Minesweeper Gameplay Screenshot](https://raw.githubusercontent.com/luxiaobai-dev/MinesweeperGame-CPP/main/MinesweeperGame-CPP/minesweeper_ui/running.gif)
-*(强烈建议：在这里放一张你游戏运行的截图或 GIF！一张动态图能极大地展示你的成果。)*
 
 ---
 
