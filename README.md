@@ -2,7 +2,6 @@
 
 这是一个经典的扫雷游戏，但它的背后有一个特别的故事：它的核心逻辑由高性能的 C++ 编写，而它的现代化用户界面则由 Flutter 构建。这个项目是我从底层系统编程到现代化 App 开发的一次完整的学习探索。
 
-![Minesweeper Gameplay Screenshot](https://raw.githubusercontent.com/luxiaobai-dev/MinesweeperGame-CPP/main/MinesweeperGame-CPP/minesweeper_ui/running.gif)
 
 ---
 
@@ -57,7 +56,7 @@
 
 本项目已经打包为 Windows 安装程序，你可以轻松下载和安装。
 
-1.  前往本项目的 **[Releases 页面](https://github.com/luxiaobai-dev/MinesweeperGame-CPP/releases)**。
+1.  前往本项目的 **[Releases 页面](https://github.com/jamtsagan/MinesweeperGame-CPP/releases)**。
 2.  下载最新版本下的 `minesweeper_setup.exe` 文件。
 3.  双击运行安装程序，按照向导完成安装即可！
 
