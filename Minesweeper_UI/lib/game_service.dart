@@ -1,65 +1,79 @@
 // lib/game_service.dart
+
 import 'dart:ffi';
+import 'dart:io';
 import 'package:ffi/ffi.dart';
-import 'minesweeper_api.dart'; // 导入 ffigen 生成的代码
+import 'package:path/path.dart' as path;
+import 'minesweeper_api.dart';
 import 'tile_state.dart';
 
 class GameService {
-  late MinesweeperApi _api;
-  late Pointer<Game> _gameInstance; // 我们的“遥控器”
-
+  // 1. 成员变量声明 (改为 final，更健壮)
+  final MinesweeperApi _api;
+  final Pointer<Game> _gameInstance;
   final int width;
   final int height;
   final int mines;
 
-  GameService({this.width = 9, this.height = 9, this.mines = 10}) {
-    // 加载 .dll 并创建游戏实例
-    _api = MinesweeperApi(DynamicLibrary.open('MinesweeperCore.dll'));
-    _gameInstance = _api.create_game(width, height, mines);
+  // 2. 一个私有的命名构造函数，只负责接收最终的初始化结果
+  GameService._internal(this._api, this._gameInstance, this.width, this.height, this.mines);
+
+  // 3. 【核心】一个公开的工厂构造函数
+  //    这是外部唯一能调用的构造函数，所有复杂的初始化逻辑都在这里
+  factory GameService({int width = 9, int height = 9, int mines = 10}) {
+    String libraryPath = '';
+
+    if (Platform.isWindows) {
+      String scriptPath = Platform.script.toFilePath(windows: true);
+      String scriptDirectory = path.dirname(scriptPath);
+      libraryPath = path.join(scriptDirectory, 'MinesweeperCore.dll');
+    } else {
+      // (为其他平台做准备)
+      // libraryPath = 'libMinesweeperCore.so';
+    }
+
+    // 加载库
+    final api = MinesweeperApi(DynamicLibrary.open(libraryPath));
+    // 创建 C++ 游戏实例
+    final gameInstance = api.create_game(width, height, mines);
+
+    // 调用私有构造函数，返回一个被完全初始化的 GameService 对象
+    return GameService._internal(api, gameInstance, width, height, mines);
   }
 
-  // 揭开格子
+  // 4. 所有其他方法都保持不变，现在它们可以正常工作了
   void revealCell(int x, int y) {
     _api.reveal_cell(_gameInstance, x, y);
   }
 
-  // 插旗
   void flagCell(int x, int y) {
     _api.flag_cell(_gameInstance, x, y);
   }
 
-  // 检查游戏状态
-  bool isGameOver() => _api.is_game_over(_gameInstance) != 0;
-  bool isGameWon() => _api.is_game_win(_gameInstance) != 0;
+  bool isGameOver() => (_api.is_game_over(_gameInstance)) != 0;
+  bool isGameWon() => (_api.is_game_win(_gameInstance)) != 0;
 
-  // 获取棋盘状态 (这是最复杂的部分)
   List<TileState> getBoardState() {
-    // 1. 在 Dart 的内存里，创建一个“空鸡蛋盒”
-    //    malloc 是 ffi 库提供的，用来分配 C 语言兼容的内存
     final pointer = malloc.allocate<simple_block>(sizeOf<simple_block>() * (width * height));
-
-    // 2. 把空盒子的地址传给 C++，让它填充
-    _api.get_board_state(_gameInstance, pointer);
-
-    // 3. 把 C++ 填充好的数据，转换成 Dart 的 List<TileState>
-    final stateList = <TileState>[];
-    for (var i = 0; i < width * height; i++) {
-      final tile = pointer.elementAt(i).ref;
-      stateList.add(TileState(
-        isRevealed: tile.look == 1,
-        isMine: tile.mine == 1,
-        isFlagged: tile.flag == 1,
-        adjacentMines: tile.neighbor_mines,
-      ));
+    try {
+      _api.get_board_state(_gameInstance, pointer);
+      final stateList = <TileState>[];
+      for (var i = 0; i < width * height; i++) {
+        final tile = pointer.elementAt(i).ref;
+        stateList.add(TileState(
+          isRevealed: tile.look == 1,
+          isMine: tile.mine == 1,
+          isFlagged: tile.flag == 1,
+          adjacentMines: tile.neighbor_mines,
+        ));
+      }
+      return stateList;
+    } finally {
+      // 确保 malloc 分配的内存总是被释放，即使中间发生错误
+      malloc.free(pointer);
     }
-
-    // 4. 【至关重要】释放我们之前分配的 C 内存，防止内存泄漏
-    malloc.free(pointer);
-
-    return stateList;
   }
 
-  // 销毁游戏实例
   void dispose() {
     _api.destroy_game(_gameInstance);
   }

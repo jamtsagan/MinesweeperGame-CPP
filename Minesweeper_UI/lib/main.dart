@@ -131,18 +131,15 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 【修正 3】build 方法现在返回的是 Scaffold，而不是 MaterialApp
     return Scaffold(
       backgroundColor: Colors.grey[800],
       appBar: AppBar(
         title: const Text('Minesweeper'),
         backgroundColor: Colors.grey[900],
-        // 添加刷新按钮
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // 这个 setState 现在可以正常工作了
               setState(() {
                 _gameService.dispose();
                 _initializeGame();
@@ -151,25 +148,57 @@ class _GamePageState extends State<GamePage> {
           ),
         ],
       ),
+      // body 部分是我们的主战场
       body: Center(
-        child: AspectRatio(
-          aspectRatio: 1.0,
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: gridWidth * gridHeight,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: gridWidth,
-              crossAxisSpacing: 2.0,
-              mainAxisSpacing: 2.0,
-            ),
-            itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: () => _handleTileTap(index),
-                onSecondaryTapDown: (details) => _handleTileFlag(index),
-                child: TileWidget(state: _boardState[index]),
-              );
-            },
-          ),
+        // 【第一层包装：LayoutBuilder】 - 我们的“高级侦察兵”
+        // builder 函数会给我们两个宝贵的信息：
+        // 1. context: 组件树的上下文
+        // 2. constraints: 父组件（这里是 Center）提供的最大可用空间信息
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            // --- 这是我们智能算法的核心 ---
+            // 1. 获取最大可用宽度和高度
+            final double maxWidth = constraints.maxWidth;
+            final double maxHeight = constraints.maxHeight;
+
+            // 2. 计算出在这块空间里，能放下的最大正方形的边长
+            //    我们取宽度和高度中较小的那一个值
+            final double boardSize = (maxWidth < maxHeight) ? maxWidth : maxHeight;
+
+            // 3. (可选，但推荐) 我们再给这个最大尺寸打个折，比如 80%，
+            //    这样棋盘就不会完全贴着屏幕边缘，留出一些“呼吸空间”。
+            final double constrainedSize = boardSize * 0.85;
+
+            // --- 布局结构开始 ---
+            // 【第二层包装：ConstrainedBox】 - 我们的“尺寸限制器”
+            return ConstrainedBox(
+              // 我们用 BoxConstraints.tightFor 来创建一个严格的正方形约束
+              // 它的宽度和高度都必须等于我们刚刚计算出的 constrainedSize
+              constraints: BoxConstraints.tightFor(
+                width: constrainedSize,
+                height: constrainedSize,
+              ),
+
+              // 【被包裹的核心内容：我们的 GridView】
+              // GridView 现在被严格限制在这个智能计算出的正方形区域内
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: gridWidth * gridHeight,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridWidth,
+                  crossAxisSpacing: 2.0,
+                  mainAxisSpacing: 2.0,
+                ),
+                itemBuilder: (BuildContext context, int index) {
+                  return GestureDetector(
+                    onTap: () => _handleTileTap(index),
+                    onSecondaryTapDown: (details) => _handleTileFlag(index),
+                    child: TileWidget(state: _boardState[index]),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ),
     );
