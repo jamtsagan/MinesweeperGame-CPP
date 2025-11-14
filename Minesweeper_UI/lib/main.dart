@@ -1,10 +1,28 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
 import 'core/theme/theme_provider.dart';
 import 'pages/game_page.dart';
 
-void main() {
+void main() async {
+  // Flutter插件的前置代码
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 窗口管理器的前置代码
+  await windowManager.ensureInitialized();
+
+  WindowOptions windowOptions = const WindowOptions(
+    minimumSize: Size(400, 500), // 设置窗口的最小宽度和高度
+    center: true,
+    // size: Size(800, 600), // 你也可以设置一个初始大小
+    // title: "Minesweeper", // 你也可以在这里设置标题
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+
   runApp(
     // 使用 ChangeNotifierProvider 把我们的 ThemeProvider 注入到 Widget 树中
     ChangeNotifierProvider(

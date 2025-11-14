@@ -220,15 +220,72 @@ class _GamePageState extends State<GamePage> {
   // build() 方法是 State 的核心，它负责根据当前的状态，“描述”出界面应该长什么样。
   @override
   Widget build(BuildContext context) {
+
+// 1. 获取整个窗口可用的“画布”尺寸
+    //    MediaQuery.of(context).size 是整个窗口的大小
+    final Size screenSize = MediaQuery.of(context).size;
+    //    AppBar().preferredSize.height 是 AppBar 的标准高度
+    final double appBarHeight = AppBar().preferredSize.height;
+    //    MediaQuery.of(context).padding.top 是顶部安全区域（比如刘海）的高度
+    final double topPadding = MediaQuery.of(context).padding.top;
+    //    我们从总高度中减去 AppBar 和安全区域，得到 body 部分的实际可用高度
+    final double availableHeight = screenSize.height - appBarHeight - topPadding;
+    final double availableWidth = screenSize.width;
+
+    // 2. 【核心】定义我们的“缩放比例”
+    //    这个值代表棋盘最多可以占据可用空间的 85%。
+    //    剩下的 15% 就会自动成为我们的动态留白！
+    //    你可以随时把这个值改成 0.9 或 0.8 来调整留白大小。
+    const double scaleFactor = 0.85;
+
+    // 3. 获取棋盘自身的宽高比
+    final double boardAspectRatio = _gridWidth / _gridHeight;
+
+    // 4. 【核心算法】根据可用空间和棋盘比例，计算出棋盘的尺寸
+    double finalBoardWidth;
+    double finalBoardHeight;
+
+    // 这个 if/else 逻辑和之前完全一样，它负责保持棋盘的正确形状
+    if (availableWidth / availableHeight > boardAspectRatio) {
+      // 可用空间比棋盘“更宽”，以高度为基准
+      finalBoardHeight = availableHeight * scaleFactor; // 直接乘以缩放比例
+      finalBoardWidth = finalBoardHeight * boardAspectRatio;
+    } else {
+      // 可用空间比棋盘“更高”，以宽度为基准
+      finalBoardWidth = availableWidth * scaleFactor; // 直接乘以缩放比例
+      finalBoardHeight = finalBoardWidth / boardAspectRatio;
+    }
     // 在 build 方法的开头，获取当前的主题
     final theme = Provider.of<ThemeProvider>(context).currentTheme;
 
     // Scaffold 是一个 Material Design 的基本页面布局结构。
     return Scaffold(
       backgroundColor: theme.background,
+
       // AppBar 是顶部的应用栏。
       appBar: AppBar(
         // 【核心修正】这里是完整的 AppBar，连接了所有的状态数据和功能按钮。
+
+        leading: IconButton(
+          // 1. 按钮的图标会根据当前主题动态变化。
+          icon: Icon(
+            // 如果当前是暗黑模式，就显示“切换到亮色”的太阳图标。
+            theme.brightness == Brightness.dark
+                ? Icons.light_mode
+            // 否则（是亮色模式），就显示“切换到暗黑”的月亮图标。
+                : Icons.dark_mode,
+            // 让图标的颜色也能适应主题
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          tooltip: '切换主题', // 鼠标悬停时的提示文字
+          // 2. 按钮的点击事件：onPressed
+          onPressed: () {
+            // 通过 Provider 找到 ThemeProvider，并调用它的 toggleTheme 方法。
+            // 'listen: false' 是一个优化，因为这个按钮本身不需要根据主题重绘。
+            Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+          },
+        ),
+
         // title 现在是一个 Row，可以在横向上排列多个 Widget。
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween, // 让子元素两端对齐。
@@ -280,13 +337,19 @@ class _GamePageState extends State<GamePage> {
           ),
         ],
       ),
-      // body 是页面的主体内容，我们在这里使用我们封装好的 GameBoard Widget。
-      body: GameBoard(
-        gridWidth: _gridWidth,
-        gridHeight: _gridHeight,
-        boardState: _boardState,
-        onTileTap: _handleTileTap,
-        onTileFlag: _handleTileFlag,
+      body: Center(
+        // 我们用一个 SizedBox 来精确地控制棋盘的最终尺寸
+        child: SizedBox(
+          width: finalBoardWidth,
+          height: finalBoardHeight,
+          child: GameBoard(
+            gridWidth: _gridWidth,
+            gridHeight: _gridHeight,
+            boardState: _boardState,
+            onTileTap: _handleTileTap,
+            onTileFlag: _handleTileFlag,
+          ),
+        ),
       ),
     );
   }

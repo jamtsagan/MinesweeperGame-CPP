@@ -21,44 +21,21 @@ class GameBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final double maxWidth = constraints.maxWidth;
-        final double maxHeight = constraints.maxHeight;
-        final double boardAspectRatio = gridWidth / gridHeight;
-
-        double boardWidth;
-        double boardHeight;
-
-        if (maxWidth / maxHeight > boardAspectRatio) {
-          boardHeight = maxHeight;
-          boardWidth = boardHeight * boardAspectRatio;
-        } else {
-          boardWidth = maxWidth;
-          boardHeight = boardWidth / boardAspectRatio;
-        }
-
-        return Center(
-          child: SizedBox(
-            width: boardWidth,
-            height: boardHeight,
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: gridWidth * gridHeight,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: gridWidth,
-                crossAxisSpacing: 2.0,
-                mainAxisSpacing: 2.0,
-              ),
-              itemBuilder: (BuildContext context, int index) {
-                return GestureDetector(
-                  onTap: () => onTileTap(index),
-                  onSecondaryTapDown: (details) => onTileFlag(index),
-                  child: TileWidget(state: boardState[index]),
-                );
-              },
-            ),
-          ),
+    // 现在，它只是一个纯粹的 GridView！
+    // 它的尺寸将由父组件（SizedBox）严格控制。
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: gridWidth * gridHeight,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: gridWidth,
+        crossAxisSpacing: 2.0,
+        mainAxisSpacing: 2.0,
+      ),
+      itemBuilder: (BuildContext context, int index) {
+        return GestureDetector(
+          onTap: () => onTileTap(index),
+          onSecondaryTapDown: (details) => onTileFlag(index),
+          child: TileWidget(state: boardState[index]),
         );
       },
     );
