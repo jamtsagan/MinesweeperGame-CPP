@@ -1,7 +1,7 @@
 // lib/tile_widget.dart
 
 import 'package:flutter/material.dart';
-import 'tile_state.dart';
+import '../models/tile_state.dart';
 
 class TileWidget extends StatelessWidget {
   final TileState state;

@@ -4,8 +4,8 @@ import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:path/path.dart' as path;
-import 'minesweeper_api.dart';
-import 'tile_state.dart';
+import '../minesweeper_api.dart';
+import '../models/tile_state.dart';
 
 class GameService {
   // 1. 成员变量声明 (改为 final，更健壮)

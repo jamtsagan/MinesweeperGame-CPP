@@ -3,11 +3,24 @@
 # include <ctime>
 # include <iostream>
 
-Game::Game(int width, int height, int num_mines) {
+Game::Game(int width, int height, int mines) {
 
+  // 长宽的合理性判定
+  if (width > 20) width = 20;
+  if (height > 20) height = 20;
+  if (width < 2) width = 2;
+  if (height < 2) height = 2;
+  // 长宽赋值
   this->grid_width = width;
   this->grid_height = height;
-  this->mines = num_mines;
+
+  // 雷数合理性判定
+  if (mines < 1) mines = 1;
+  if (mines >= width * height) mines = width * height - 1;
+  // 雷数赋值
+  this->mines = mines;
+
+  // 初始化变量
   this->flags = 0;
   this->game_over_flags = false;
 
