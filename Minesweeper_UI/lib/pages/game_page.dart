@@ -6,8 +6,6 @@ import 'package:flutter/material.dart'; // Flutter 的核心 Material Design 库
 import 'package:flutter/services.dart'; // 提供了输入框格式化等服务
 import 'package:provider/provider.dart';
 import '../core/theme/theme_provider.dart';
-
-// 导入我们自己拆分出去的文件
 import '../services/game_service.dart';
 import '../models/tile_state.dart';
 import '../widgets/game_board.dart'; // 导入我们新的棋盘 Widget
@@ -215,6 +213,36 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  // 格式化时间输出
+  String _formatDuration(int totalSeconds) {
+    // 1. 使用秒数创建一个 Duration 对象。
+    final duration = Duration(seconds: totalSeconds);
+
+    // 2. 将 Duration 转换为 "h:mm:ss.micros" 格式的字符串。
+    //    例如，70 秒会变成 "0:01:10.000000"
+    String s = duration.toString();
+
+    // 3. 我们不想要小数点后面的微秒，所以我们用 '.' 来分割字符串，
+    //    并只取第一部分。
+    //    "0:01:10.000000" -> "0:01:10"
+    String withoutMicros = s.split('.')[0];
+
+    // 4. 现在，我们用 ':' 来分割 "h:mm:ss" 字符串，得到一个部分列表。
+    //    "0:01:10" -> ["0", "01", "10"]
+    List<String> parts = withoutMicros.split(':');
+
+    // 5. 【核心】为每个部分补上前面的 '0'，确保总是两位数。
+    //    padLeft(2, '0') 的意思是：“如果字符串长度不足 2，就在左边用 '0' 来填充。”
+    //    "0" -> "00"
+    //    "1" -> "01"
+    //    "10" -> "10"
+    String hours = parts[0].padLeft(2, '0');
+    String minutes = parts[1].padLeft(2, '0');
+    String seconds = parts[2].padLeft(2, '0');
+
+    // 6. 最后，用 ':' 把它们重新组合起来，并返回最终的完美格式。
+    return "$hours:$minutes:$seconds";
+  }
 
   // --- UI 构建区 ---
   // build() 方法是 State 的核心，它负责根据当前的状态，“描述”出界面应该长什么样。
@@ -236,7 +264,7 @@ class _GamePageState extends State<GamePage> {
     //    这个值代表棋盘最多可以占据可用空间的 85%。
     //    剩下的 15% 就会自动成为我们的动态留白！
     //    你可以随时把这个值改成 0.9 或 0.8 来调整留白大小。
-    const double scaleFactor = 0.85;
+    const double scaleFactor = 0.78;
 
     // 3. 获取棋盘自身的宽高比
     final double boardAspectRatio = _gridWidth / _gridHeight;
@@ -294,7 +322,7 @@ class _GamePageState extends State<GamePage> {
             // 使用 .where() 方法筛选出所有被插旗的格子，然后用 .length 获取数量。
             Text('💣 ${_mines - _boardState.where((t) => t.isFlagged).length}'),
             // 实时显示游戏时间。
-            Text('⏰ $_secondsElapsed'),
+            Text('⏰ ${_formatDuration(_secondsElapsed)}'),
           ],
         ),
         backgroundColor: theme.surface,
