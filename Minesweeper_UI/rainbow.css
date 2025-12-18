@@ -1,0 +1,87 @@
+/* =========================================================
+   AnuPpuccin 风格化改造 V2.1 (修复双重色块版)
+   逻辑：精准定位行容器，剔除内部干扰
+   ========================================================= */
+
+body {
+  /* --- 定义颜色变量 --- */
+  --h1-marker: #f75464;
+  --h2-marker: #ff9e64;
+  --h3-marker: #e0af68;
+  --h4-marker: #9ece6a;
+  --h5-marker: #589df6;
+  --h6-marker: #bb9af7;
+}
+
+/* 1. 强制重置标题文字颜色 (保持正文灰) */
+/* 这里使用了 :is() 选择器来简化代码 */
+.markdown-source-view .cm-line.HyperMD-header,
+.markdown-preview-view :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--text-normal) !important;
+}
+
+/* ---------------------------------------------------------
+   核心修复：区分阅读模式和编辑模式，精准打击
+--------------------------------------------------------- */
+
+/* --- A. 阅读模式 (Reading Mode) --- */
+.markdown-preview-view :is(h1, h2, h3, h4, h5, h6)::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 18px;
+  margin-right: 10px;
+  border-radius: 4px;
+  vertical-align: middle;
+  transform: translateY(-2px);
+}
+
+/* --- B. 编辑模式 (Live Preview) - 修复重点 --- */
+
+/* 关键点：只针对 div.cm-line (行容器) 添加伪元素 */
+/* HyperMD-header 是编辑模式下标题行的专用类名 */
+.markdown-source-view .cm-line.HyperMD-header::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 18px;
+  margin-right: 10px; /* 色块和 # 号之间的距离 */
+  border-radius: 4px;
+  vertical-align: text-bottom;
+  transform: translateY(-2px);
+}
+
+/* 关键点：强制禁止内部 span 元素再次生成伪元素 */
+/* 这行代码杀死了你截图里第二个多余的色块 */
+.markdown-source-view span.cm-header::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* ---------------------------------------------------------
+   颜色分配
+--------------------------------------------------------- */
+
+/* H1 */
+.markdown-preview-view h1::before, 
+.cm-line.HyperMD-header-1::before { background-color: var(--h1-marker); }
+
+/* H2 */
+.markdown-preview-view h2::before, 
+.cm-line.HyperMD-header-2::before { background-color: var(--h2-marker); }
+
+/* H3 */
+.markdown-preview-view h3::before, 
+.cm-line.HyperMD-header-3::before { background-color: var(--h3-marker); }
+
+/* H4 */
+.markdown-preview-view h4::before, 
+.cm-line.HyperMD-header-4::before { background-color: var(--h4-marker); }
+
+/* H5 */
+.markdown-preview-view h5::before, 
+.cm-line.HyperMD-header-5::before { background-color: var(--h5-marker); }
+
+/* H6 */
+.markdown-preview-view h6::before, 
+.cm-line.HyperMD-header-6::before { background-color: var(--h6-marker); }
